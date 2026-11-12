@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pick a bill, clear a bill</title>
+<style>
+:root{--bg:#faf7f2;--card:#fff;--ink:#1d1b19;--mute:#6b645c;--line:#e6dfd5;--acc:#c2410c;--accink:#fff;--ok:#15803d;--warn:#b91c1c;--warnbg:#fee2e2;--bar:#eadfd2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161412;--card:#211e1b;--ink:#f3eee8;--mute:#a79e93;--line:#37322d;--acc:#fb923c;--accink:#1d1b19;--ok:#4ade80;--warn:#fca5a5;--warnbg:#3b1717;--bar:#37322d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#161412;--card:#211e1b;--ink:#f3eee8;--mute:#a79e93;--line:#37322d;--acc:#fb923c;--accink:#1d1b19;--ok:#4ade80;--warn:#fca5a5;--warnbg:#3b1717;--bar:#37322d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;line-height:1.55}
+.w{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:2rem;line-height:1.15;margin:.2em 0}
+h2{font-size:1.25rem;margin:0 0 .3em}
+.sans,button,input{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.tag{font:600 .8rem system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.story{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+.story p{margin:.6em 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.stat b{display:block;font:700 1.15rem system-ui,sans-serif}
+.stat span{font:.75rem system-ui,sans-serif;color:var(--mute)}
+.urgent{background:var(--warnbg);color:var(--warn);border-radius:12px;padding:12px 14px;margin:12px 0;font:600 .95rem system-ui,sans-serif}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;font:.85rem system-ui,sans-serif;color:var(--mute)}
+.how div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
+.how b{color:var(--ink);display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.card.hot{border:2px solid var(--warn)}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.pill{display:inline-block;font:600 .7rem system-ui,sans-serif;padding:2px 8px;border-radius:99px;background:var(--bar);color:var(--mute);margin-right:4px}
+.pill.red{background:var(--warnbg);color:var(--warn)}
+.amt{font:700 1.4rem system-ui,sans-serif;white-space:nowrap}
+.sm{font:.8rem system-ui,sans-serif;color:var(--mute)}
+.bar{height:8px;background:var(--bar);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.bar i{display:block;height:100%;background:var(--ok)}
+button{cursor:pointer;border:0;border-radius:10px;padding:11px 16px;font-size:.95rem;font-weight:600}
+.btn{background:var(--acc);color:var(--accink)}
+.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.card .btn{margin-top:8px;width:100%}
+.paid{border-color:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.on{display:flex}
+.sheet{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips button{padding:7px 12px;font-size:.85rem}
+input{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:1rem}
+.tabs{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+.tabs button{flex:1;min-width:110px;background:var(--bar);color:var(--ink);padding:9px}
+.tabs button.on{background:var(--acc);color:var(--accink)}
+.pane{display:none;font:.92rem system-ui,sans-serif}
+.pane.on{display:block}
+#qr{display:flex;justify-content:center;margin:10px 0;background:#fff;padding:10px;border-radius:10px;width:fit-content;margin-inline:auto}
+.code{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;font-family:ui-monospace,Menlo,monospace;word-break:break-all;margin:8px 0}
+.foot{font:.8rem system-ui,sans-serif;color:var(--mute);margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+a{color:var(--acc)}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="tag">Kind stranger? Generous soul? Pick a bill.</div>
+<h1>Pick a bill. Clear a bill.</h1>
+<p class="sans" style="color:var(--mute);margin:0">Every bill below is real, with the amount still due. Choose one, pay any amount, and watch it turn <b>PAID</b>.</p>
+
+<div class="urgent" id="urgent"></div>
+
+<div class="story">
+<h2>Why I’m here</h2>
+<p>I’m <span data-name></span>, a solo founder in Bengaluru. I’ve lived with alopecia, an autoimmune condition, since I was a child. It slowly took away my confidence, and I couldn’t continue in a regular corporate job.</p>
+<p>I didn’t want to give up, so I started building <a href="https://app.happiheal.in/" target="_blank" rel="noopener">HappiHeal</a>, an app that helps people going through hair loss feel less alone. It’s still early and it isn’t earning enough yet, but I believe in it.</p>
+<p>Years of home and family expenses, and debt with interest piling up year after year, left me carrying more than I can manage. I paid what I could for a long time, then I started missing EMIs, and the interest kept growing every single day.</p>
+<p>The gold loans started with my parents. To make sure the family’s gold wasn’t lost, I renewed those loans in my own name and kept paying the interest every month. Then I missed three months, and one of them has now moved to auction.</p>
+<p>I also borrowed from friends and family when no bank would help. They trusted me without paperwork, and repaying them is a debt of honour as much as money.</p>
+<p>I’m not hiding any of this. I’d rather show every bill openly and ask for help than lose the gold or let this keep growing. Any amount helps, and I’ll post proof as each bill is cleared. Everything you send goes to the bills on this page.</p>
+</div>
+
+<div class="stats">
+<div class="stat"><b id="sDue"></b><span>still due</span></div>
+<div class="stat"><b id="sRaised"></b><span>received so far</span></div>
+<div class="stat"><b id="sPaid"></b><span>bills cleared</span></div>
+</div>
+
+<div class="how">
+<div><b>1. Choose</b>a bill, in priority order</div>
+<div><b>2. Pay</b>UPI, or message me and I’ll send bank, international (SWIFT) or direct lender details</div>
+<div><b>3. Proof</b>send the receipt and I’ll post the update</div>
+</div>
+
+<div id="list"></div>
+
+<div class="foot">
+<p><b>How the money is used.</b> Payments you send to me go to me personally and I apply them to the bills listed here. Where a lender allows it, you can pay the lender directly instead; message me and I will send the link. This is not a registered charity, nothing is tax-deductible, and there are no rewards beyond my thanks. Please only pay using the details shown on this page or sent by me from my official handle. I will never ask for your OTP or password.</p>
+<p>Last updated <span id="upd"></span></p>
+</div>
+</div>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+/* ============ EDIT THIS BLOCK ============ */
+var CFG = {
+  name: "Harshitha M V",
+  upi: "harshithamv93@sbi",
+  paypal: "",
+  xHandle: "harshitha_816",
+  email: "hmv18885@gmail.com",
+  updated: "12 Nov 2026",
+  asOn: "10 Nov 2026"
+};
+/* raised = rupees received for that bill so far; set paid:true when closed */
+var BILLS = [
+ {id:7, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"7385", due:216000, orig:216000, raised:0, paid:false, hot:true, deadline:"2026-11-15", tag:"AUCTION · most urgent",
+  story:"Interest at 20.9%. I paid only the interest each month, missed three months, and this loan has now moved to auction. Clearing it keeps my family’s gold.", lender_direct:false},
+ {id:1, type:"Credit card", lender:"Standard Chartered", end:"3077", due:87874.64, orig:87874.64, raised:0, paid:false, deadline:"2026-11-15", tag:"NPA", min:500,
+  story:"Everyday home expenses and older debts ended up on this card. I paid the minimum for months, but the interest outgrew me. Due 15 Nov.", lender_direct:true},
+ {id:2, accrues:true, type:"Personal loan", lender:"IDFC First Bank", end:"7902", due:72345.36, orig:195408, raised:0, paid:false, tag:"NPA", min:8072,
+  story:"I have already repaid about 63% of this loan. Seven EMIs are pending, three of them overdue, and late payment fees and charges have been added on top, which keeps pushing the balance up. One EMI is ₹8,072, and paying the balance closes the loan for good.", lender_direct:true},
+ {id:3, accrues:true, asOn:"12 Nov 2026", type:"Personal loan", lender:"Kissht (SMFG India Credit)", end:"", due:31140, orig:85500, raised:0, paid:false, tag:"NPA", min:500,
+  story:"I missed the last three EMIs and interest adds every day. A small amount here stops the clock.", lender_direct:true},
+ {id:5, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9791", due:292316, orig:292316, raised:0, paid:false, min:500,
+  story:"Renewed in my name so the gold stays with my family. I pay 20.9% interest on the 6th of every month. Reducing the principal cuts that interest.", lender_direct:false},
+ {id:6, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9793", due:301352, orig:301352, raised:0, paid:false, min:500,
+  story:"Same story: my parents’ gold, renewed in my name, interest paid on the 6th each month. Every rupee toward the principal brings the gold closer to home.", lender_direct:false},
+ {id:4, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9807", due:109487, orig:109487, raised:0, paid:false, min:500,
+  story:"Renewed in my name to protect the gold. Interest of 20.9% is paid on the 7th of every month.", lender_direct:false},
+ {id:8, type:"Hand loan", lender:"Friends & family", end:"", due:487290, orig:487290, raised:0, paid:false, min:500,
+  story:"When no bank would help, people who believed in me lent me money with no paperwork. They have been patient. Money sent here comes to me and I repay them directly, so they can be repaid first and I can look them in the eye.", lender_direct:false, direct_me:true},
+ {id:9, type:"Home rent", lender:"Rent and maintenance", end:"", due:53040, orig:53040, raised:0, paid:false, tag:"2 months overdue", min:500,
+  story:"My rent is two months behind: ₹25,000 for October, and ₹25,000 plus ₹3,040 maintenance for November. Keeping a roof over my head while I clear everything else is part of getting back on my feet.", lender_direct:false, direct_me:true}
+];
+/* ========================================= */
+
+var inr=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0});
+function f(n){return inr.format(Math.round(n))}
+function $(i){return document.getElementById(i)}
+document.querySelectorAll("[data-name]").forEach(function(e){e.textContent=CFG.name});
+$("upd").textContent=CFG.updated;
+
+function daysLeft(d){var t=new Date(d+"T23:59:59");return Math.ceil((t-new Date())/864e5)}
+
+function render(){
+  var due=0,raised=0,paid=0;
+  BILLS.forEach(function(b){due+=b.paid?0:b.due;raised+=b.raised;if(b.paid)paid++});
+  $("sDue").textContent=f(due);$("sRaised").textContent=f(raised);$("sPaid").textContent=paid+" / "+BILLS.length;
+  var hot=BILLS.find(function(b){return b.hot&&!b.paid});
+  var u=$("urgent");
+  if(hot){var d=daysLeft(hot.deadline);u.style.display="block";
+    u.textContent="Most urgent: the gold loan ending "+hot.end+" is in auction. "+(d>0?d+(d==1?" day":" days")+" left (deadline 15 Nov). ":"Deadline has passed, please check my latest update. ")+f(hot.due)+" needed."}
+  else u.style.display="none";
+  $("list").innerHTML=BILLS.map(function(b,i){
+    var pct=b.paid?100:Math.min(100,b.raised/b.due*100);
+    return '<div class="card '+(b.hot&&!b.paid?"hot":"")+(b.paid?" paid":"")+'">'
+    +'<div class="row"><div><span class="pill">'+b.type+'</span>'+(b.tag?'<span class="pill red">'+b.tag+'</span>':"")
+    +'<h2 style="margin-top:6px">'+b.lender+(b.end?' <span class="sm">ending '+b.end+'</span>':"")+'</h2></div>'
+    +'<div style="text-align:right"><div class="amt">'+(b.paid?"PAID":f(b.due))+'</div><div class="sm">'+(b.paid?"thank you":"still due")+'</div></div></div>'
+    +'<p style="margin:.5em 0">'+b.story+'</p>'
+    +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
+    +'<div class="sm">'+f(b.raised)+' received · '+Math.round(pct)+'% of this bill</div>'
+    +(b.accrues&&!b.paid?'<div class="sm" style="color:var(--warn);margin-top:4px">Amount as of '+(b.asOn||CFG.asOn)+'. Interest keeps adding every day it stays unpaid.</div>':"")
+    +(b.paid?"":'<button class="btn" onclick="openBill('+i+')">Help with this bill</button>')
+    +'</div>'}).join("");
+}
+
+var cur=null;
+function openBill(i){
+  cur=BILLS[i];
+  var min=cur.min||500;
+  var chips=[min,1000,5000,10000].filter(function(v,k,a){return a.indexOf(v)===k&&v<cur.due}).concat([Math.round(cur.due)]);
+  $("sheet").innerHTML=
+   '<div class="row"><h2>Bill '+cur.id+': '+cur.lender+(cur.end?' ('+cur.end+')':"")+'</h2><button class="ghost" onclick="closeM()">Close</button></div>'
+  +'<div class="sm">Still due '+f(cur.due)+'. Any amount helps.</div>'
+  +'<label class="sm" style="display:block;margin-top:10px">Amount (INR, optional)</label><input id="amt" type="number" min="1" inputmode="numeric" placeholder="e.g. 1000" oninput="upd()">'
+  +'<div class="chips">'+chips.map(function(v){return '<button class="ghost" onclick="setAmt('+v+')">'+f(v)+'</button>'}).join("")+'</div>'
+  +'<div class="tabs"><button class="on" onclick="tab(0,this)">UPI (India)</button>'+(CFG.paypal?'<button onclick="tab(1,this)">PayPal</button>':"")+'<button onclick="tab(2,this)">Bank / International</button>'+(cur.lender_direct?'<button onclick="tab(3,this)">Pay lender</button>':"")+'</div>'
+  +'<div class="pane on" id="p0"><div id="qr"></div><div class="sm" style="text-align:center">Scan, or copy my UPI ID. Put “Bill '+cur.id+'” in the note.</div><div class="code" id="upiid"></div>'
+  +'<button class="btn" style="width:100%" onclick="copyUpi()">Copy UPI ID</button><p><a id="upilink" href="#">Open in my UPI app (phone)</a></p></div>'
+  +(CFG.paypal?'<div class="pane" id="p1"><p>Pay with PayPal from anywhere. Add “Bill '+cur.id+'” in the note.</p><a href="'+CFG.paypal+'" target="_blank" rel="noopener"><button class="btn" style="width:100%">Open PayPal</button></a></div>':"")
+  +'<div class="pane" id="p2"><p>For bank transfers and international (SWIFT) transfers, including from Wise or a bank abroad, just message me by email or DM and I will send you my bank details right away. I share them privately so they are not posted publicly.</p>'
+  +'<a href="'+mail("Bank transfer for Bill "+cur.id)+'"><button class="btn" style="width:100%">Email me and I’ll send my bank details</button></a>'
+  +'<p class="sm">Or DM me on X and I’ll send them there: <a href="https://x.com/'+CFG.xHandle+'" target="_blank" rel="noopener">@'+CFG.xHandle+'</a></p></div>'
+  +(cur.lender_direct?'<div class="pane" id="p3"><p>You can pay the lender directly with a private payment link or steps from me, so the money never touches my account. I will send it only to someone who is about to pay.</p>'
+  +'<a href="'+mail("Payment link for Bill "+cur.id)+'"><button class="btn" style="width:100%">Email me and I’ll send the payment link</button></a></div>':"")
+  +'<p class="sm" style="margin-top:14px"><b>After paying:</b> send me the receipt on X or by <a href="'+mail("Receipt for Bill "+cur.id)+'">email</a>, mention Bill '+cur.id+', and I will update the page and post proof.</p>';
+  $("modal").classList.add("on");
+  $("upiid").textContent=CFG.upi;
+  upd();
+}
+function mail(s){return "mailto:"+CFG.email+"?subject="+encodeURIComponent(s)+"&body="+encodeURIComponent("Hi, I’d like to help with this bill.")}
+function setAmt(v){$("amt").value=v;upd()}
+function tab(n,btn){document.querySelectorAll(".pane").forEach(function(p){p.classList.toggle("on",p.id==="p"+n)});
+  document.querySelectorAll(".tabs button").forEach(function(b){b.classList.remove("on")});btn.classList.add("on")}
+function upd(){
+  var a=parseFloat($("amt").value)||0;
+  var url="upi://pay?pa="+encodeURIComponent(CFG.upi)+"&pn="+encodeURIComponent(CFG.name)+(a?"&am="+a:"")+"&cu=INR&tn="+encodeURIComponent("Bill "+cur.id);
+  $("upilink").href=url;
+  var q=$("qr");q.innerHTML="";
+  try{new QRCode(q,{text:url,width:190,height:190})}catch(e){q.textContent="QR unavailable: use the UPI ID below."}
+}
+function copyUpi(){try{navigator.clipboard.writeText(CFG.upi)}catch(e){}}
+function closeM(){$("modal").classList.remove("on")}
+$("modal").addEventListener("click",function(e){if(e.target===this)closeM()});
+render();
+</script>
+</body>
+</html>
