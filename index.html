@@ -107,26 +107,26 @@ var CFG = {
   paypal: "",
   xHandle: "harshitha_816",
   email: "hmv18885@gmail.com",
-  updated: "10 Nov 2026",
+  updated: "12 Nov 2026",
   asOn: "10 Nov 2026"
 };
 /* raised = rupees received for that bill so far; set paid:true when closed */
 var BILLS = [
- {id:7, accrues:true, asOn:"8 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"7385", due:215734, orig:215734, raised:0, paid:false, hot:true, deadline:"2026-11-14", tag:"AUCTION · most urgent",
+ {id:7, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"7385", due:216000, orig:216000, raised:0, paid:false, hot:true, deadline:"2026-11-15", tag:"AUCTION · most urgent",
   story:"Interest at 20.9%. I paid only the interest each month, missed three months, and this loan has now moved to auction. Clearing it keeps my family’s gold.", lender_direct:false},
  {id:1, type:"Credit card", lender:"Standard Chartered", end:"3077", due:87874.64, orig:87874.64, raised:0, paid:false, deadline:"2026-11-15", tag:"NPA", min:500,
   story:"Everyday home expenses and older debts ended up on this card. I paid the minimum for months, but the interest outgrew me. Due 15 Nov.", lender_direct:true},
  {id:2, accrues:true, type:"Personal loan", lender:"IDFC First Bank", end:"7902", due:72345.36, orig:195408, raised:0, paid:false, tag:"NPA", min:8072,
   story:"I have already repaid about 63% of this loan. Seven EMIs are pending, three of them overdue, and late payment fees and charges have been added on top, which keeps pushing the balance up. One EMI is ₹8,072, and paying the balance closes the loan for good.", lender_direct:true},
- {id:3, accrues:true, type:"Personal loan", lender:"Kissht (SMFG India Credit)", end:"", due:31110, orig:85500, raised:0, paid:false, tag:"NPA", min:500,
+ {id:3, accrues:true, asOn:"12 Nov 2026", type:"Personal loan", lender:"Kissht (SMFG India Credit)", end:"", due:31140, orig:85500, raised:0, paid:false, tag:"NPA", min:500,
   story:"I missed the last three EMIs and interest adds every day. A small amount here stops the clock.", lender_direct:true},
- {id:5, accrues:true, asOn:"6 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9791", due:291000, orig:291000, raised:0, paid:false, min:500,
+ {id:5, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9791", due:292316, orig:292316, raised:0, paid:false, min:500,
   story:"Renewed in my name so the gold stays with my family. I pay 20.9% interest on the 6th of every month. Reducing the principal cuts that interest.", lender_direct:false},
- {id:6, accrues:true, asOn:"6 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9793", due:300000, orig:300000, raised:0, paid:false, min:500,
+ {id:6, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9793", due:301352, orig:301352, raised:0, paid:false, min:500,
   story:"Same story: my parents’ gold, renewed in my name, interest paid on the 6th each month. Every rupee toward the principal brings the gold closer to home.", lender_direct:false},
- {id:4, accrues:true, asOn:"7 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9807", due:108900, orig:108900, raised:0, paid:false, min:500,
+ {id:4, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9807", due:109487, orig:109487, raised:0, paid:false, min:500,
   story:"Renewed in my name to protect the gold. Interest of 20.9% is paid on the 7th of every month.", lender_direct:false},
- {id:8, type:"Hand loan", lender:"Friends & family", end:"", due:473290, orig:473290, raised:0, paid:false, min:500,
+ {id:8, type:"Hand loan", lender:"Friends & family", end:"", due:487290, orig:487290, raised:0, paid:false, min:500,
   story:"When no bank would help, people who believed in me lent me money with no paperwork. They have been patient. Money sent here comes to me and I repay them directly, so they can be repaid first and I can look them in the eye.", lender_direct:false, direct_me:true},
  {id:9, type:"Home rent", lender:"Rent and maintenance", end:"", due:53040, orig:53040, raised:0, paid:false, tag:"2 months overdue", min:500,
   story:"My rent is two months behind: ₹25,000 for October, and ₹25,000 plus ₹3,040 maintenance for November. Keeping a roof over my head while I clear everything else is part of getting back on my feet.", lender_direct:false, direct_me:true}
@@ -148,7 +148,7 @@ function render(){
   var hot=BILLS.find(function(b){return b.hot&&!b.paid});
   var u=$("urgent");
   if(hot){var d=daysLeft(hot.deadline);u.style.display="block";
-    u.textContent="Most urgent: the gold loan ending "+hot.end+" is in auction. "+(d>0?d+(d==1?" day":" days")+" left (deadline 12 Nov). ":"Deadline has passed, please check my latest update. ")+f(hot.due)+" needed."}
+    u.textContent="Most urgent: the gold loan ending "+hot.end+" is in auction. "+(d>0?d+(d==1?" day":" days")+" left (deadline 15 Nov). ":"Deadline has passed, please check my latest update. ")+f(hot.due)+" needed."}
   else u.style.display="none";
   $("list").innerHTML=BILLS.map(function(b,i){
     var pct=b.paid?100:Math.min(100,b.raised/b.due*100);
