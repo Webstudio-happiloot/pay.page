@@ -35,6 +35,12 @@ h2{font-size:1.25rem;margin:0 0 .3em}
 .amt{font:700 1.4rem system-ui,sans-serif;white-space:nowrap}
 .sm{font:.8rem system-ui,sans-serif;color:var(--mute)}
 .usd{display:block;font:500 .8rem system-ui,sans-serif;color:var(--mute);white-space:nowrap}
+.goal{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+.goal .big{font:700 1.9rem system-ui,sans-serif;line-height:1.2}
+.gbar{height:16px;background:var(--bar);border-radius:99px;overflow:hidden;margin:12px 0 6px}
+.gbar i{display:block;height:100%;width:0;background:#0f766e;border-radius:99px;transition:width .6s}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gbar i{background:#2dd4bf}}
+:root[data-theme="dark"] .gbar i{background:#2dd4bf}
 .bar{height:8px;background:var(--bar);border-radius:99px;overflow:hidden;margin:10px 0 4px}
 .bar i{display:block;height:100%;background:var(--ok)}
 button{cursor:pointer;border:0;border-radius:10px;padding:11px 16px;font-size:.95rem;font-weight:600}
@@ -65,6 +71,8 @@ a{color:var(--acc)}
 <h1>Pick a bill. Clear a bill.</h1>
 <p class="sans" style="color:var(--mute);margin:0">Every bill below is real, with the amount still due. Choose one, pay any amount, and watch it turn <b>PAID</b>.</p>
 
+<div class="goal"><div class="sm">Total to clear</div><div class="big"><span id="gInr"></span> <span class="sm" id="gUsd"></span></div><div class="gbar"><i id="gFill"></i></div><div class="sm" id="gTxt"></div><div class="sm" id="gFx" style="margin-top:4px"></div></div>
+
 <div class="urgent" id="urgent"></div>
 
 <div class="story">
@@ -78,7 +86,7 @@ a{color:var(--acc)}
 </div>
 
 <div class="stats">
-<div class="stat"><b id="sDue"></b><span>still due</span></div>
+<div class="stat"><b id="sDue"></b><span>still to raise</span></div>
 <div class="stat"><b id="sRaised"></b><span>received so far</span></div>
 <div class="stat"><b id="sPaid"></b><span>bills cleared</span></div>
 </div>
@@ -111,6 +119,7 @@ var CFG = {
   email: "hmv18885@gmail.com",
   updated: "12 Nov 2026",
   usdRate: 94,
+  usdAsOn: "13 Nov 2026",
   asOn: "10 Nov 2026"
 };
 /* raised = rupees received for that bill so far; set paid:true when closed */
@@ -144,14 +153,19 @@ function usd(n){return "$"+Math.ceil(n/CFG.usdRate).toLocaleString("en-US")}
 function $(i){return document.getElementById(i)}
 document.querySelectorAll("[data-name]").forEach(function(e){e.textContent=CFG.name});
 $("upd").textContent=CFG.updated;
-$("fxnote").textContent="US dollar amounts are approximate and rounded up, at about ₹"+CFG.usdRate+" per US$1. The rate changes daily, so the rupee amount is what is due.";
+$("fxnote").textContent="US dollar amounts are approximate and rounded up, at about ₹"+CFG.usdRate+" per US$1 (market rate as on "+CFG.usdAsOn+"). They change with the currency market, so the rupee amount is what is due.";
 
 function daysLeft(d){var t=new Date(d+"T23:59:59");return Math.ceil((t-new Date())/864e5)}
 
 function render(){
-  var due=0,raised=0,paid=0;
-  BILLS.forEach(function(b){due+=b.paid?0:b.due;raised+=b.raised;if(b.paid)paid++});
+  var due=0,raised=0,paid=0,goal=0;
+  BILLS.forEach(function(b){goal+=b.due;due+=b.paid?0:Math.max(0,b.due-b.raised);raised+=b.raised;if(b.paid)paid++});
   $("sDue").innerHTML=f(due)+'<small class="usd">(≈ '+usd(due)+')</small>';$("sRaised").innerHTML=f(raised)+'<small class="usd">(≈ '+usd(raised)+')</small>';$("sPaid").textContent=paid+" / "+BILLS.length;
+  var gp=goal?Math.min(100,raised/goal*100):0;
+  $("gInr").textContent=f(goal);$("gUsd").textContent="(≈ "+usd(goal)+")";
+  $("gFill").style.width=gp+"%";
+  $("gTxt").textContent=raised>0?f(raised)+" received ("+(gp<1?gp.toFixed(1):Math.round(gp))+"% of the total)":"Nothing received yet. Every rupee you send moves this bar.";
+  $("gFx").textContent="US$ value is approximate and changes with the currency market (about ₹"+CFG.usdRate+" per $1, as on "+CFG.usdAsOn+").";
   var hot=BILLS.find(function(b){return b.hot&&!b.paid});
   var u=$("urgent");
   if(hot){var d=daysLeft(hot.deadline);u.style.display="block";
