@@ -34,6 +34,7 @@ h2{font-size:1.25rem;margin:0 0 .3em}
 .pill.red{background:var(--warnbg);color:var(--warn)}
 .amt{font:700 1.4rem system-ui,sans-serif;white-space:nowrap}
 .sm{font:.8rem system-ui,sans-serif;color:var(--mute)}
+.usd{display:block;font:500 .8rem system-ui,sans-serif;color:var(--mute);white-space:nowrap}
 .bar{height:8px;background:var(--bar);border-radius:99px;overflow:hidden;margin:10px 0 4px}
 .bar i{display:block;height:100%;background:var(--ok)}
 button{cursor:pointer;border:0;border-radius:10px;padding:11px 16px;font-size:.95rem;font-weight:600}
@@ -92,6 +93,7 @@ a{color:var(--acc)}
 
 <div class="foot">
 <p><b>How the money is used.</b> Payments you send to me go to me personally and I apply them to the bills listed here. Where a lender allows it, you can pay the lender directly instead; message me and I will send the link. This is not a registered charity, nothing is tax-deductible, and there are no rewards beyond my thanks. Please only pay using the details shown on this page or sent by me from my official handle. I will never ask for your OTP or password.</p>
+<p id="fxnote"></p>
 <p>Last updated <span id="upd"></span></p>
 </div>
 </div>
@@ -108,6 +110,7 @@ var CFG = {
   xHandle: "harshitha_816",
   email: "hmv18885@gmail.com",
   updated: "12 Nov 2026",
+  usdRate: 94,
   asOn: "10 Nov 2026"
 };
 /* raised = rupees received for that bill so far; set paid:true when closed */
@@ -126,6 +129,8 @@ var BILLS = [
   story:"Same story: my parents’ gold, renewed in my name, interest paid on the 6th each month. Every rupee toward the principal brings the gold closer to home.", lender_direct:false},
  {id:4, accrues:true, asOn:"12 Nov 2026", type:"Gold loan", lender:"Muthoot Mcred", end:"9807", due:109487, orig:109487, raised:0, paid:false, min:500,
   story:"Renewed in my name to protect the gold. Interest of 20.9% is paid on the 7th of every month.", lender_direct:false},
+ {id:10, type:"Gold loan", lender:"Mahalakshmi Bankers", end:"", due:34000, orig:34000, raised:0, paid:false, min:500,
+  story:"A smaller gold loan with a banker. Clearing it brings this gold home too.", lender_direct:false},
  {id:8, type:"Hand loan", lender:"Friends & family", end:"", due:487290, orig:487290, raised:0, paid:false, min:500,
   story:"When no bank would help, people who believed in me lent me money with no paperwork. They have been patient. Money sent here comes to me and I repay them directly, so they can be repaid first and I can look them in the eye.", lender_direct:false, direct_me:true},
  {id:9, type:"Home rent", lender:"Rent and maintenance", end:"", due:53040, orig:53040, raised:0, paid:false, tag:"2 months overdue", min:500,
@@ -135,27 +140,29 @@ var BILLS = [
 
 var inr=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0});
 function f(n){return inr.format(Math.round(n))}
+function usd(n){return "$"+Math.ceil(n/CFG.usdRate).toLocaleString("en-US")}
 function $(i){return document.getElementById(i)}
 document.querySelectorAll("[data-name]").forEach(function(e){e.textContent=CFG.name});
 $("upd").textContent=CFG.updated;
+$("fxnote").textContent="US dollar amounts are approximate and rounded up, at about ₹"+CFG.usdRate+" per US$1. The rate changes daily, so the rupee amount is what is due.";
 
 function daysLeft(d){var t=new Date(d+"T23:59:59");return Math.ceil((t-new Date())/864e5)}
 
 function render(){
   var due=0,raised=0,paid=0;
   BILLS.forEach(function(b){due+=b.paid?0:b.due;raised+=b.raised;if(b.paid)paid++});
-  $("sDue").textContent=f(due);$("sRaised").textContent=f(raised);$("sPaid").textContent=paid+" / "+BILLS.length;
+  $("sDue").innerHTML=f(due)+'<small class="usd">(≈ '+usd(due)+')</small>';$("sRaised").innerHTML=f(raised)+'<small class="usd">(≈ '+usd(raised)+')</small>';$("sPaid").textContent=paid+" / "+BILLS.length;
   var hot=BILLS.find(function(b){return b.hot&&!b.paid});
   var u=$("urgent");
   if(hot){var d=daysLeft(hot.deadline);u.style.display="block";
-    u.textContent="Most urgent: the gold loan ending "+hot.end+" is in auction. "+(d>0?d+(d==1?" day":" days")+" left (deadline 15 Nov). ":"Deadline has passed, please check my latest update. ")+f(hot.due)+" needed."}
+    u.textContent="Most urgent: the gold loan ending "+hot.end+" is in auction. "+(d>0?d+(d==1?" day":" days")+" left (deadline 15 Nov). ":"Deadline has passed, please check my latest update. ")+f(hot.due)+" (≈ "+usd(hot.due)+") needed."}
   else u.style.display="none";
   $("list").innerHTML=BILLS.map(function(b,i){
     var pct=b.paid?100:Math.min(100,b.raised/b.due*100);
     return '<div class="card '+(b.hot&&!b.paid?"hot":"")+(b.paid?" paid":"")+'">'
     +'<div class="row"><div><span class="pill">'+b.type+'</span>'+(b.tag?'<span class="pill red">'+b.tag+'</span>':"")
     +'<h2 style="margin-top:6px">'+b.lender+(b.end?' <span class="sm">ending '+b.end+'</span>':"")+'</h2></div>'
-    +'<div style="text-align:right"><div class="amt">'+(b.paid?"PAID":f(b.due))+'</div><div class="sm">'+(b.paid?"thank you":"still due")+'</div></div></div>'
+    +'<div style="text-align:right"><div class="amt">'+(b.paid?"PAID":f(b.due)+'<small class="usd">(≈ '+usd(b.due)+')</small>')+'</div><div class="sm">'+(b.paid?"thank you":"still due")+'</div></div></div>'
     +'<p style="margin:.5em 0">'+b.story+'</p>'
     +'<div class="bar"><i style="width:'+pct+'%"></i></div>'
     +'<div class="sm">'+f(b.raised)+' received · '+Math.round(pct)+'% of this bill</div>'
@@ -171,9 +178,9 @@ function openBill(i){
   var chips=[min,1000,5000,10000].filter(function(v,k,a){return a.indexOf(v)===k&&v<cur.due}).concat([Math.round(cur.due)]);
   $("sheet").innerHTML=
    '<div class="row"><h2>Bill '+cur.id+': '+cur.lender+(cur.end?' ('+cur.end+')':"")+'</h2><button class="ghost" onclick="closeM()">Close</button></div>'
-  +'<div class="sm">Still due '+f(cur.due)+'. Any amount helps.</div>'
+  +'<div class="sm">Still due '+f(cur.due)+' (≈ '+usd(cur.due)+'). Any amount helps.</div>'
   +'<label class="sm" style="display:block;margin-top:10px">Amount (INR, optional)</label><input id="amt" type="number" min="1" inputmode="numeric" placeholder="e.g. 1000" oninput="upd()">'
-  +'<div class="chips">'+chips.map(function(v){return '<button class="ghost" onclick="setAmt('+v+')">'+f(v)+'</button>'}).join("")+'</div>'
+  +'<div class="chips">'+chips.map(function(v){return '<button class="ghost" onclick="setAmt('+v+')">'+f(v)+' (≈ '+usd(v)+')</button>'}).join("")+'</div>'
   +'<div class="tabs"><button class="on" onclick="tab(0,this)">UPI (India)</button>'+(CFG.paypal?'<button onclick="tab(1,this)">PayPal</button>':"")+'<button onclick="tab(2,this)">Bank / International</button>'+(cur.lender_direct?'<button onclick="tab(3,this)">Pay lender</button>':"")+'</div>'
   +'<div class="pane on" id="p0"><div id="qr"></div><div class="sm" style="text-align:center">Scan, or copy my UPI ID. Put “Bill '+cur.id+'” in the note.</div><div class="code" id="upiid"></div>'
   +'<button class="btn" style="width:100%" onclick="copyUpi()">Copy UPI ID</button><p><a id="upilink" href="#">Open in my UPI app (phone)</a></p></div>'
